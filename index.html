@@ -49,12 +49,12 @@
                         <tr v-for="time in times">
                             <td>
                                 <img :src="time.escudo" class="escudo" alt="time.nome">
-                                {{time.nome}}
+                                {{time.nome | ucwords}}
                             </td>
                             <td>{{time.pontos}}</td>
                             <td>{{time.gm}}</td>
                             <td>{{time.gs}}</td>
-                            <td></td>
+                            <td>{{time | saldo}}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -181,6 +181,14 @@
                 const timeCasa = this.novoJogo.casa.time
                 timeCasa.fimJogo(timeVisitante, golsMarcados, golsSofridos)
                 this.visao = "tabela"
+            }
+        },
+        filters: {
+            saldo (time) {
+                return time.gm - time.gs
+            },
+            ucwords (valor) {
+                return valor.charAt(0).toUpperCase() + valor.slice(1)
             }
         }
     })
