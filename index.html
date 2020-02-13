@@ -11,7 +11,7 @@
 <body>
     <div id="app" class="container">
         <div class="row">
-            <h3>Campeonato Brasileiro - Série A - 2019</h3>
+            <h1>Campeonato Brasileiro - Série A - 2019</h1>
         </div>
         <div class="row">
             <div class="col-md-12">
@@ -35,18 +35,20 @@
 
             </div>
             <div class="col-md-12 mt-5" v-show="visao=='tabela'">
+                <input type="text" class="form-control" v-model="busca">
                 <table class="table table-striped">
                     <thead>
                         <tr>
                             <th>Nome</th>
-                            <th>Pontos</th>
-                            <th>GM</th>
-                            <th>GS</th>
-                            <th>Saldo</th>
+                            <th v-for="(coluna, indice) in ordem.colunas">
+                                <a href="#" @click.prevent="ordenar(indice)">
+                                    {{coluna | ucwords}}
+                                </a>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="time in times">
+                        <tr v-for="time in timesFiltrados ">
                             <td>
                                 <img :src="time.escudo" class="escudo" alt="time.nome">
                                 {{time.nome | ucwords}}
@@ -54,15 +56,30 @@
                             <td>{{time.pontos}}</td>
                             <td>{{time.gm}}</td>
                             <td>{{time.gs}}</td>
-                            <td>{{time | saldo}}</td>
+                            <td>{{time.saldo}}</td>
                         </tr>
                     </tbody>
                 </table>
+                <h3>Classificados para a Libertadores</h3>
+                <ul>
+                    <li v-for="time in timesLibertadores">
+                        <img :src="time.escudo" class="escudo" alt="time.nome">
+                        {{time.nome | ucwords}}
+                    </li>
+                </ul>
+                <h3>Zona de rebaixamento:</h3>
+                <ul>
+                    <li v-for="time in timesRebaixamento">
+                        <img :src="time.escudo" class="escudo" alt="time.nome">
+                        {{time.nome | ucwords}}
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
 <!-- development version, includes helpful console warni01ngs -->
 <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.min.js"></script>
 <script>
     class Time
     {
@@ -73,6 +90,7 @@
             this.pontos = 0
             this.gm = 0
             this.gs = 0
+            this.saldo = this.gm - this.gs
         }
 
         fimJogo (timeVisitante, golsMarcados, golsSofridos) {
@@ -120,6 +138,11 @@
     new Vue ({
         el: '#app',
         data: {
+            busca: '',
+            ordem: {
+                colunas: ['pontos', 'gm', 'gs', 'saldo'],
+                ordenacao: ['desc', 'desc', 'asc', 'desc']
+            },
             times: [
                 new Time('América-MG', 'assets/america_mg_60x60.png'),
                 new Time('Atlético-MG', 'assets/atletico_mg_60x60.png'),
@@ -155,6 +178,26 @@
             },
             visao: 'tabela'
         },
+        computed: {
+            timesLibertadores (times) {
+                return this.times.slice(0, 6)
+            },
+            timesRebaixamento (times) {
+                return this.times.slice(16, 20)
+            },
+            timesFiltrados () {
+                console.log('Ordenou');
+                
+                let times = _.orderBy(this.times, this.ordem.colunas, this.ordem.ordenacao)
+                let self = this
+                return _.filter(times, function(time) {
+                    var busca = self.busca.toLowerCase()
+                    return time.nome.toLowerCase().indexOf(busca) >= 0 
+
+                    
+                })
+            }
+        },
         methods: {
 
             showAlert () {
@@ -181,6 +224,9 @@
                 const timeCasa = this.novoJogo.casa.time
                 timeCasa.fimJogo(timeVisitante, golsMarcados, golsSofridos)
                 this.visao = "tabela"
+            },
+            ordenar (indice) {
+                this.$set(this.ordem.ordenacao, indice, this.ordem.ordenacao[indice] == 'desc' ? 'asc' : 'desc')
             }
         },
         filters: {
