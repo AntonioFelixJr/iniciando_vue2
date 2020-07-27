@@ -2,12 +2,68 @@ Vue.filter('ucwords', function (valor) {
     return valor.charAt(0).toUpperCase() + valor.slice(1)
 })
 
-Vue.component('titulo', {
+
+Vue.component('my-app', {
     template: `
-    <div class="row">
-        <h1>Campeonato Brasileiro - Série A - 2020</h1>
+    <div class="container">
+        <titulo></titulo>
+        <div class="row">
+            <div class="col-md-12">
+                <novo-jogo @novo-jogo="showPlacar($event)" :times="times"></novo-jogo>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12" v-show="visao!='tabela'">
+                <placar :time-casa="timeCasa" :time-fora="timeFora"
+                    @fim-jogo="showTabela($event)">
+                </placar>
+            </div>
+            <div class="col-md-12" v-show="visao === 'tabela'">
+                <tabela-classificacao :times="times"></tabela-classificacao>               
+            </div>
+        </div>
     </div>
-    `
+    `,
+    data () {
+        return {
+        
+            times: [
+                new Time('América-MG', 'assets/america_mg_60x60.png'),
+                new Time('Atlético-MG', 'assets/atletico_mg_60x60.png'),
+                new Time('Atlético-PR', 'assets/atletico_pr_60x60.png'),
+                new Time('Bahia', 'assets/bahia_60x60.png'),
+                new Time('Botafogo', 'assets/botafogo_60x60.png'),
+                new Time('Ceará', 'assets/ceara_60x60.png'),
+                new Time('Chapecoense', 'assets/chapecoense_60x60.png'),
+                new Time('Corinthians', 'assets/corinthians_60x60.png'),
+                new Time('Cruzeiro', 'assets/cruzeiro_60x60.png'),
+                new Time('flamengo', 'assets/flamengo_60x60.png'),
+                new Time('Fluminense', 'assets/fluminense_60x60.png'),
+                new Time('Grêmio', 'assets/gremio_60x60.png'),
+                new Time('Internacional', 'assets/internacional_60x60.png'),
+                new Time('Palmeiras', 'assets/palmeiras_60x60.png'),
+                new Time('Parana', 'assets/parana_60x60.png'),
+                new Time('Santos', 'assets/santos_60x60.png'),
+                new Time('São Paulo', 'assets/sao_paulo_60x60.png'),
+                new Time('Sport', 'assets/sport_60x60.png'),
+                new Time('Vasco', 'assets/vasco_60x60.png'),
+                new Time('Vitória', 'assets/vitoria_60x60.png'),
+            ],
+            timeCasa: null,
+            timeFora: null,
+            visao: 'tabela'
+        }
+    },
+    methods: {
+        showTabela (event) {
+            this.visao = 'tabela'
+        },
+        showPlacar ({timeCasa, timeFora}) {
+            this.timeCasa = timeCasa
+            this.timeFora = timeFora
+            this.visao = 'placar'
+        }
+    }
 })
 
 Vue.component('clube', {
@@ -26,7 +82,7 @@ Vue.component('clubes-libertadores', {
     <div>
         <h3>Classificados para a Libertadores</h3>
         <ul>
-            <li v-for="time in times">
+            <li v-for="time in timesLibertadores">
                 <clube :time="time"></clube>
             </li>
         </ul>
@@ -45,7 +101,7 @@ Vue.component('clubes-rebaixados', {
     <div>
         <h3>Zona de rebaixamento:</h3>
         <ul>
-            <li v-for="time in times">
+            <li v-for="time in timesRebaixamento">
                 <clube :time="time"></clube>
             </li>
         </ul>
@@ -108,8 +164,6 @@ Vue.component('tabela-classificacao', {
             return _.filter(this.timeOrdenado, function(time) {
                 var busca = self.busca.toLowerCase()
                 return time.nome.toLowerCase().indexOf(busca) >= 0 
-
-                
             })
         },
         timeOrdenado () {
@@ -124,6 +178,26 @@ Vue.component('tabela-classificacao', {
 })
 
 Vue.component('novo-jogo', {
+    props: ['times', ],
+    template: `
+    <div>
+        <button class="btn btn-primary" @click="criarNovoJogo">
+            Novo Jogo!
+        </button>
+    </div>
+    `,
+    methods: {
+        criarNovoJogo () {
+            let indiceCasa = Math.floor(Math.random() * 20)
+            let indiceFora = Math.floor(Math.random() * 20)
+            let timeCasa = this.times[indiceCasa]
+            let timeFora = this.times[indiceFora]
+            this.$emit('novo-jogo', {timeCasa, timeFora})
+        }
+    }
+})
+
+Vue.component('placar', {
     props: ['timeCasa', 'timeFora'],
     data () {
         return {
@@ -153,47 +227,25 @@ Vue.component('novo-jogo', {
     }
 })
 
+
+Vue.component('titulo', {
+    template: `
+    <div  class="row">
+        <h1 @click="showVisao()">Campeonato Brasileiro - Série A - 2020 - {{$parent.visao | ucwords}}</h1>
+    </div>
+    `,
+    methods: {
+        showVisao () {
+            console.log(this.$parent.$parent)
+            // console.log(this.$parent.visao)
+        }
+    }
+})
+
 new Vue ({
     el: '#app',
     data: {
-        times: [
-            new Time('América-MG', 'assets/america_mg_60x60.png'),
-            new Time('Atlético-MG', 'assets/atletico_mg_60x60.png'),
-            new Time('Atlético-PR', 'assets/atletico_pr_60x60.png'),
-            new Time('Bahia', 'assets/bahia_60x60.png'),
-            new Time('Botafogo', 'assets/botafogo_60x60.png'),
-            new Time('Ceará', 'assets/ceara_60x60.png'),
-            new Time('Chapecoense', 'assets/chapecoense_60x60.png'),
-            new Time('Corinthians', 'assets/corinthians_60x60.png'),
-            new Time('Cruzeiro', 'assets/cruzeiro_60x60.png'),
-            new Time('flamengo', 'assets/flamengo_60x60.png'),
-            new Time('Fluminense', 'assets/fluminense_60x60.png'),
-            new Time('Grêmio', 'assets/gremio_60x60.png'),
-            new Time('Internacional', 'assets/internacional_60x60.png'),
-            new Time('Palmeiras', 'assets/palmeiras_60x60.png'),
-            new Time('Parana', 'assets/parana_60x60.png'),
-            new Time('Santos', 'assets/santos_60x60.png'),
-            new Time('São Paulo', 'assets/sao_paulo_60x60.png'),
-            new Time('Sport', 'assets/sport_60x60.png'),
-            new Time('Vasco', 'assets/vasco_60x60.png'),
-            new Time('Vitória', 'assets/vitoria_60x60.png'),
-        ],
-
-        timeCasa: null,
-        timeFora: null,
-        visao: 'tabela'
-    },
-    methods: {
-        criarNovoJogo () {
-            let indiceCasa = Math.floor(Math.random() * 20)
-            let indiceFora = Math.floor(Math.random() * 20)
-            this.timeCasa = this.times[indiceCasa]
-            this.timeFora = this.times[indiceFora]
-            this.visao = 'placar'
-        },
-        showTabela (event) {
-            console.log(event)
-            this.visao = 'tabela'
-        }
+        param1: 'teste'
     }
+    //template: '<my-app></my-app>'
 })

@@ -9,22 +9,8 @@
     <title>Iniciando com Vue</title>
 </head>
 <body>
-    <div id="app" class="container">
-        <titulo></titulo>
-        <div class="row">
-            <div class="col-md-12">
-                <button class="btn btn-primary" @click="criarNovoJogo">Novo Jogo!</button>
-            </div>
-        </div>
-        <div class="row">
-
-            <div class="col-md-12" v-show="visao!='tabela'">
-                <novo-jogo :time-casa="timeCasa" :time-fora="timeFora" @fim-jogo="showTabela($event)"></novo-jogo>
-            </div>
-            <div class="col-md-12" v-show="visao === 'tabela'">
-                <tabela-classificacao :times="times"></tabela-classificacao>               
-            </div>
-        </div>
+    <div id="app">
+        <my-app></my-app>
     </div>
 <!-- development version, includes helpful console warni01ngs -->
 <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
